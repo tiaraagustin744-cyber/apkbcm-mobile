@@ -101,7 +101,7 @@ fun MbcaDashboardScreen(
                     .fillMaxWidth()
                     .statusBarsPadding(),
                 color = Color.White,
-                shadowElevation = 2.dp
+                shadowElevation = 0.dp
             ) {
                 Row(
                     modifier = Modifier
