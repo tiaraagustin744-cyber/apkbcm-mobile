@@ -48,6 +48,7 @@ fun TransferInboxScreen(
         modifier = modifier
             .fillMaxSize()
             .background(Color.White)
+            .navigationBarsPadding()
     ) {
         // 1. Top Bar: "m-Transfer" (Centered) + Green Indicator + Glossy "Edit" Button (No back button)
         BcaSubMenuTopBar(
@@ -84,7 +85,8 @@ fun TransferInboxScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
+                .weight(1f),
+            contentPadding = PaddingValues(bottom = 24.dp)
         ) {
             items(inboxItems, key = { it.id }) { item ->
                 Column(
@@ -183,6 +185,14 @@ fun TransferInboxScreen(
                 }
             }
         }
+
+        // 3. Batas Bawah Aman (Bottom boundary safe margin)
+        Spacer(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(18.dp)
+                .background(Color.White)
+        )
     }
 
     // Receipt Detail Alert
