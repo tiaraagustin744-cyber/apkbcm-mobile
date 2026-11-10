@@ -22,20 +22,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bca.mobile.R
+import com.bca.mobile.data.model.BcaInboxItem
 import com.bca.mobile.data.model.TransferReceipt
+import com.bca.mobile.data.repository.BcaRepository
 import com.bca.mobile.ui.components.BcaAlertResultDialog
 import com.bca.mobile.ui.components.BcaReceiptDialog
 import com.bca.mobile.ui.components.BcaSubMenuTopBar
 import com.bca.mobile.ui.components.BcaTopBarActionButton
-
-data class BcaInboxItem(
-    val id: String,
-    val typeTitle: String,
-    val line1: String,
-    val line2: String? = null,
-    val fullReceiptMessage: String,
-    val isYellow: Boolean = false
-)
 
 /**
  * Authentic BCA m-Transfer Inbox Screen matching Screenshot_2026-10-28-09-13-41-915_com.bca.jpg.jpeg
@@ -45,92 +38,11 @@ fun TransferInboxScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val repository = remember { BcaRepository.getInstance() }
+    val inboxItems by repository.inboxItems.collectAsState()
     var isEditMode by remember { mutableStateOf(false) }
     var selectedItemForDetail by remember { mutableStateOf<BcaInboxItem?>(null) }
     var alertMessage by remember { mutableStateOf<String?>(null) }
-
-    val inboxItems = remember {
-        mutableStateListOf(
-            BcaInboxItem(
-                id = "1",
-                typeTitle = "Transfer BCA Virtual Account",
-                line1 = "16/10/2026 16.44.06 SHOPEE...",
-                line2 = null,
-                fullReceiptMessage = "TRANSFER BCA VIRTUAL ACCOUNT\nTanggal: 16/10/2026 16:44:06\nNo. VA: 12208123456789\nNama: SHOPEEPAY\nJumlah: Rp 85.000\nSTATUS: BERHASIL"
-            ),
-            BcaInboxItem(
-                id = "2",
-                typeTitle = "Transfer Antar Rekening",
-                line1 = "16/10/2026 12.51:44 SINDI",
-                line2 = "APRILIA",
-                fullReceiptMessage = "TRANSFER ANTAR REKENING\nTanggal: 16/10/2026 12:51:44\nKe: 5371829012\nNama: SINDI APRILIA\nJumlah: Rp 45.000\nSTATUS: BERHASIL"
-            ),
-            BcaInboxItem(
-                id = "3",
-                typeTitle = "Transfer BCA Virtual Account",
-                line1 = "15/10/2026 15.44.56 TIKET....",
-                line2 = null,
-                fullReceiptMessage = "TRANSFER BCA VIRTUAL ACCOUNT\nTanggal: 15/10/2026 15:44:56\nNo. VA: 010293847561\nNama: TIKET.COM\nJumlah: Rp 220.000\nSTATUS: BERHASIL"
-            ),
-            BcaInboxItem(
-                id = "4",
-                typeTitle = "Transfer BCA Virtual Account",
-                line1 = "14/10/2026 18.03.04 TRAVEL...",
-                line2 = null,
-                fullReceiptMessage = "TRANSFER BCA VIRTUAL ACCOUNT\nTanggal: 14/10/2026 18:03:04\nNo. VA: 081293847562\nNama: TRAVELOKA\nJumlah: Rp 120.000\nSTATUS: BERHASIL"
-            ),
-            BcaInboxItem(
-                id = "5",
-                typeTitle = "Transfer BCA Virtual Account",
-                line1 = "11/10/2026 17.13.30 TRIP.C...",
-                line2 = null,
-                fullReceiptMessage = "TRANSFER BCA VIRTUAL ACCOUNT\nTanggal: 11/10/2026 17:13:30\nNo. VA: 098123456781\nNama: TRIP.COM\nJumlah: Rp 350.000\nSTATUS: BERHASIL"
-            ),
-            BcaInboxItem(
-                id = "6",
-                typeTitle = "Transfer Antar Bank",
-                line1 = "11/10/2026 15.19.51 SONY P...",
-                line2 = null,
-                fullReceiptMessage = "TRANSFER ANTAR BANK\nTanggal: 11/10/2026 15:19:51\nBank: BANK MANDIRI\nKe: 1370018294012\nNama: SONY PRATAMA\nJumlah: Rp 500.000\nSTATUS: BERHASIL"
-            ),
-            BcaInboxItem(
-                id = "7",
-                typeTitle = "Transfer BCA Virtual Account",
-                line1 = "10/10/2026 03.34.37 DANA",
-                line2 = null,
-                fullReceiptMessage = "TRANSFER BCA VIRTUAL ACCOUNT\nTanggal: 10/10/2026 03:34:37\nNo. VA: 39010812345678\nNama: DANA TOPUP\nJumlah: Rp 50.000\nSTATUS: BERHASIL"
-            ),
-            BcaInboxItem(
-                id = "8",
-                typeTitle = "Transfer BCA Virtual Account",
-                line1 = "09/10/2026 23.30.49 DANA",
-                line2 = null,
-                fullReceiptMessage = "TRANSFER BCA VIRTUAL ACCOUNT\nTanggal: 09/10/2026 23:30:49\nNo. VA: 39010812345678\nNama: DANA TOPUP\nJumlah: Rp 25.000\nSTATUS: BERHASIL"
-            ),
-            BcaInboxItem(
-                id = "9",
-                typeTitle = "Transfer Antar Bank",
-                line1 = "09/10/2026 21.45.49 RESTU ...",
-                line2 = null,
-                fullReceiptMessage = "TRANSFER ANTAR BANK\nTanggal: 09/10/2026 21:45:49\nBank: BANK BRI\nKe: 020601058392501\nNama: RESTU ADI\nJumlah: Rp 150.000\nSTATUS: BERHASIL",
-                isYellow = true
-            ),
-            BcaInboxItem(
-                id = "10",
-                typeTitle = "Transfer Antar Rekening",
-                line1 = "09/10/2026 21.38.48 RISKI",
-                line2 = "NASRULLOH",
-                fullReceiptMessage = "TRANSFER ANTAR REKENING\nTanggal: 09/10/2026 21:38:48\nKe: 2891047123\nNama: RISKI NASRULLOH\nJumlah: Rp 100.000\nSTATUS: BERHASIL"
-            ),
-            BcaInboxItem(
-                id = "11",
-                typeTitle = "Transfer Antar Rekening",
-                line1 = "03/10/2026 21.22.26",
-                line2 = "MUHAMMAD KHOIRUL ANWAR",
-                fullReceiptMessage = "TRANSFER ANTAR REKENING\nTanggal: 03/10/2026 21:22:26\nKe: 8492018374\nNama: MUHAMMAD KHOIRUL ANWAR\nJumlah: Rp 200.000\nSTATUS: BERHASIL"
-            )
-        )
-    }
 
     Column(
         modifier = modifier
@@ -183,8 +95,9 @@ fun TransferInboxScreen(
                             indication = rememberRipple(bounded = true),
                             onClick = {
                                 if (isEditMode) {
-                                    inboxItems.remove(item)
+                                    repository.deleteInboxItem(item.id)
                                 } else {
+                                    repository.markInboxItemRead(item.id)
                                     selectedItemForDetail = item
                                 }
                             }
@@ -274,7 +187,7 @@ fun TransferInboxScreen(
 
     // Receipt Detail Alert
     selectedItemForDetail?.let { item ->
-        val receipt = remember(item) {
+        val receipt = item.receipt ?: remember(item) {
             parseInboxToReceipt(item)
         }
         BcaReceiptDialog(

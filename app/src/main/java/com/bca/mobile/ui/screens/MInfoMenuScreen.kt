@@ -38,6 +38,7 @@ fun MInfoMenuScreen(
     onBack: () -> Unit,
     onNavigateToMutasi: () -> Unit,
     onNavigateToKurs: () -> Unit,
+    onNavigateToInbox: () -> Unit = {},
     onTabSelected: (BcaNavTab) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -199,6 +200,28 @@ fun MInfoMenuScreen(
                         onClick = {
                             alertInfoMessage = "Kartu Kredit BCA Everyday Card: Sisa limit Rp 18.500.000,00."
                         }
+                    )
+                    HorizontalDivider(color = Color(0xFFF0F2F5), thickness = 0.8.dp)
+
+                    BcaMenuItemRow(
+                        title = "Transaksi dan Tagihan",
+                        onClick = {
+                            alertInfoMessage = "Transaksi dan Tagihan Kartu Kredit: Tidak ada tagihan baru yang jatuh tempo."
+                        }
+                    )
+                    HorizontalDivider(color = Color(0xFFF0F2F5), thickness = 0.8.dp)
+
+                    BcaMenuItemRow(
+                        title = "Lainnya",
+                        onClick = {
+                            alertInfoMessage = "Layanan Kartu Kredit Lainnya: Registrasi Autopay, e-Statement, dan Reward BCA."
+                        }
+                    )
+                    HorizontalDivider(color = Color(0xFFF0F2F5), thickness = 0.8.dp)
+
+                    BcaMenuItemRow(
+                        title = "Inbox",
+                        onClick = onNavigateToInbox
                     )
                 }
 

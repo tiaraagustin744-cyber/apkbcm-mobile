@@ -173,6 +173,23 @@ class BcaRepository private constructor() {
     )
     val exchangeRates: StateFlow<List<ExchangeRate>> = _exchangeRates.asStateFlow()
 
+    private val _inboxItems = MutableStateFlow<List<BcaInboxItem>>(emptyList())
+    val inboxItems: StateFlow<List<BcaInboxItem>> = _inboxItems.asStateFlow()
+
+    init {
+        _inboxItems.value = createInitialInbox()
+    }
+
+    fun markInboxItemRead(id: String) {
+        _inboxItems.value = _inboxItems.value.map {
+            if (it.id == id) it.copy(isYellow = true) else it
+        }
+    }
+
+    fun deleteInboxItem(id: String) {
+        _inboxItems.value = _inboxItems.value.filter { it.id != id }
+    }
+
     private val _accessCode = MutableStateFlow("123456")
     val accessCode: StateFlow<String> = _accessCode.asStateFlow()
 
@@ -264,6 +281,21 @@ class BcaRepository private constructor() {
             service = ""
         )
 
+        val newInboxItem = BcaInboxItem(
+            id = "INB-" + System.currentTimeMillis(),
+            typeTitle = "Transfer Antar Rekening",
+            line1 = if (recipient.name.length > 18) {
+                "${receipt.timestamp} ${recipient.name.take(16)}..."
+            } else {
+                "${receipt.timestamp} ${recipient.name}"
+            },
+            line2 = null,
+            fullReceiptMessage = "TRANSFER ANTAR REKENING\nTanggal: ${receipt.timestamp}\nKe: ${receipt.destinationAccount}\nNama: ${receipt.destinationName}\nJumlah: Rp ${formatNumberOnly(receipt.amount)}\nSTATUS: BERHASIL",
+            isYellow = false,
+            receipt = receipt
+        )
+        _inboxItems.value = listOf(newInboxItem) + _inboxItems.value
+
         return Result.success(receipt)
     }
 
@@ -321,6 +353,21 @@ class BcaRepository private constructor() {
             service = service
         )
 
+        val newInboxItem = BcaInboxItem(
+            id = "INB-" + System.currentTimeMillis(),
+            typeTitle = "Transfer Antar Bank",
+            line1 = if (recipientName.length > 12) {
+                "${receipt.timestamp} ${recipientName.take(10)}..."
+            } else {
+                "${receipt.timestamp} $recipientName"
+            },
+            line2 = null,
+            fullReceiptMessage = "TRANSFER ANTAR BANK\nTanggal: ${receipt.timestamp}\nBank: $recipientBank\nKe: $recipientAccount\nNama: $recipientName\nJumlah: Rp ${formatNumberOnly(amount)}\nSTATUS: BERHASIL",
+            isYellow = false,
+            receipt = receipt
+        )
+        _inboxItems.value = listOf(newInboxItem) + _inboxItems.value
+
         return Result.success(receipt)
     }
 
@@ -377,6 +424,348 @@ class BcaRepository private constructor() {
 
     fun generateCardlessCode(amount: Long): String {
         return (100000..999999).random().toString()
+    }
+
+    private fun createInitialInbox(): List<BcaInboxItem> {
+        val currAcc = _account.value.accountNumber
+        return listOf(
+            BcaInboxItem(
+                id = "INB-1",
+                typeTitle = "Transfer Antar Rekening",
+                line1 = "09/11/2026 06:04:57 FIQIH NURAJIZAH",
+                line2 = null,
+                fullReceiptMessage = "TRANSFER ANTAR REKENING\nTanggal: 09/11/2026 06:04:57\nKe: 3741720467\nNama: FIQIH NURAJIZAH\nJumlah: Rp 150.000\nSTATUS: BERHASIL",
+                isYellow = false,
+                receipt = TransferReceipt(
+                    referenceNo = "TRF92018241",
+                    timestamp = "09/11/2026 06:04:57",
+                    sourceAccount = currAcc,
+                    destinationAccount = "3741720467",
+                    destinationName = "FIQIH NURAJIZAH",
+                    destinationBank = "BCA",
+                    amount = 150_000L,
+                    adminFee = 0L,
+                    note = "",
+                    status = "BERHASIL",
+                    service = ""
+                )
+            ),
+            BcaInboxItem(
+                id = "INB-2",
+                typeTitle = "Transfer Antar Bank",
+                line1 = "08/11/2026 21:17:36 BENI S...",
+                line2 = null,
+                fullReceiptMessage = "TRANSFER ANTAR BANK\nTanggal: 08/11/2026 21:17:36\nBank: SEABANK\nKe: 901717125251\nNama: BENI SURYAWAN\nJumlah: Rp 250.000\nSTATUS: BERHASIL",
+                isYellow = false,
+                receipt = TransferReceipt(
+                    referenceNo = "OBK81729103",
+                    timestamp = "08/11/2026 21:17:36",
+                    sourceAccount = currAcc,
+                    destinationAccount = "901717125251",
+                    destinationName = "BENI SURYAWAN",
+                    destinationBank = "SEABANK",
+                    amount = 250_000L,
+                    adminFee = 2_500L,
+                    note = "",
+                    status = "BERHASIL",
+                    service = "BI-FAST"
+                )
+            ),
+            BcaInboxItem(
+                id = "INB-3",
+                typeTitle = "Transfer Antar Bank",
+                line1 = "08/11/2026 18:57:10 AGUS S...",
+                line2 = null,
+                fullReceiptMessage = "TRANSFER ANTAR BANK\nTanggal: 08/11/2026 18:57:10\nBank: BANK BRI\nKe: 001201998877501\nNama: AGUS SETIAWAN\nJumlah: Rp 100.000\nSTATUS: BERHASIL",
+                isYellow = false,
+                receipt = TransferReceipt(
+                    referenceNo = "OBK81728192",
+                    timestamp = "08/11/2026 18:57:10",
+                    sourceAccount = currAcc,
+                    destinationAccount = "001201998877501",
+                    destinationName = "AGUS SETIAWAN",
+                    destinationBank = "BANK BRI",
+                    amount = 100_000L,
+                    adminFee = 2_500L,
+                    note = "",
+                    status = "BERHASIL",
+                    service = "BI-FAST"
+                )
+            ),
+            BcaInboxItem(
+                id = "INB-4",
+                typeTitle = "Transfer Antar Bank",
+                line1 = "08/11/2026 11:40:35 AGUS S...",
+                line2 = null,
+                fullReceiptMessage = "TRANSFER ANTAR BANK\nTanggal: 08/11/2026 11:40:35\nBank: BANK BRI\nKe: 001201998877501\nNama: AGUS SETIAWAN\nJumlah: Rp 50.000\nSTATUS: BERHASIL",
+                isYellow = false,
+                receipt = TransferReceipt(
+                    referenceNo = "OBK81726541",
+                    timestamp = "08/11/2026 11:40:35",
+                    sourceAccount = currAcc,
+                    destinationAccount = "001201998877501",
+                    destinationName = "AGUS SETIAWAN",
+                    destinationBank = "BANK BRI",
+                    amount = 50_000L,
+                    adminFee = 2_500L,
+                    note = "",
+                    status = "BERHASIL",
+                    service = "BI-FAST"
+                )
+            ),
+            BcaInboxItem(
+                id = "INB-5",
+                typeTitle = "Transfer Antar Rekening",
+                line1 = "08/11/2026 07:42:35 AHMAD FAUZI",
+                line2 = null,
+                fullReceiptMessage = "TRANSFER ANTAR REKENING\nTanggal: 08/11/2026 07:42:35\nKe: 0112233445\nNama: AHMAD FAUZI\nJumlah: Rp 75.000\nSTATUS: BERHASIL",
+                isYellow = false,
+                receipt = TransferReceipt(
+                    referenceNo = "TRF81724129",
+                    timestamp = "08/11/2026 07:42:35",
+                    sourceAccount = currAcc,
+                    destinationAccount = "0112233445",
+                    destinationName = "AHMAD FAUZI",
+                    destinationBank = "BCA",
+                    amount = 75_000L,
+                    adminFee = 0L,
+                    note = "",
+                    status = "BERHASIL",
+                    service = ""
+                )
+            ),
+            BcaInboxItem(
+                id = "INB-6",
+                typeTitle = "Transfer Antar Rekening",
+                line1 = "06/11/2026 23:43:00 ANDHIKA",
+                line2 = "RAMADHONA",
+                fullReceiptMessage = "TRANSFER ANTAR REKENING\nTanggal: 06/11/2026 23:43:00\nKe: 5270183920\nNama: ANDHIKA RAMADHONA\nJumlah: Rp 200.000\nSTATUS: BERHASIL",
+                isYellow = false,
+                receipt = TransferReceipt(
+                    referenceNo = "TRF61928410",
+                    timestamp = "06/11/2026 23:43:00",
+                    sourceAccount = currAcc,
+                    destinationAccount = "5270183920",
+                    destinationName = "ANDHIKA RAMADHONA",
+                    destinationBank = "BCA",
+                    amount = 200_000L,
+                    adminFee = 0L,
+                    note = "",
+                    status = "BERHASIL",
+                    service = ""
+                )
+            ),
+            BcaInboxItem(
+                id = "INB-7",
+                typeTitle = "Transfer Antar Rekening",
+                line1 = "06/11/2026 06:40:55 FIQIH NURAJIZAH",
+                line2 = null,
+                fullReceiptMessage = "TRANSFER ANTAR REKENING\nTanggal: 06/11/2026 06:40:55\nKe: 3741720467\nNama: FIQIH NURAJIZAH\nJumlah: Rp 120.000\nSTATUS: BERHASIL",
+                isYellow = false,
+                receipt = TransferReceipt(
+                    referenceNo = "TRF61829104",
+                    timestamp = "06/11/2026 06:40:55",
+                    sourceAccount = currAcc,
+                    destinationAccount = "3741720467",
+                    destinationName = "FIQIH NURAJIZAH",
+                    destinationBank = "BCA",
+                    amount = 120_000L,
+                    adminFee = 0L,
+                    note = "",
+                    status = "BERHASIL",
+                    service = ""
+                )
+            ),
+            BcaInboxItem(
+                id = "INB-8",
+                typeTitle = "Transfer Antar Rekening",
+                line1 = "05/11/2026 23:09:34 AHMAD FAUZI",
+                line2 = null,
+                fullReceiptMessage = "TRANSFER ANTAR REKENING\nTanggal: 05/11/2026 23:09:34\nKe: 0112233445\nNama: AHMAD FAUZI\nJumlah: Rp 300.000\nSTATUS: BERHASIL",
+                isYellow = true,
+                receipt = TransferReceipt(
+                    referenceNo = "TRF51928471",
+                    timestamp = "05/11/2026 23:09:34",
+                    sourceAccount = currAcc,
+                    destinationAccount = "0112233445",
+                    destinationName = "AHMAD FAUZI",
+                    destinationBank = "BCA",
+                    amount = 300_000L,
+                    adminFee = 0L,
+                    note = "",
+                    status = "BERHASIL",
+                    service = ""
+                )
+            ),
+            BcaInboxItem(
+                id = "INB-9",
+                typeTitle = "Transfer Antar Bank",
+                line1 = "05/11/2026 23:08:46 BENI S...",
+                line2 = null,
+                fullReceiptMessage = "TRANSFER ANTAR BANK\nTanggal: 05/11/2026 23:08:46\nBank: SEABANK\nKe: 901717125251\nNama: BENI SURYAWAN\nJumlah: Rp 50.000\nSTATUS: BERHASIL",
+                isYellow = false,
+                receipt = TransferReceipt(
+                    referenceNo = "OBK51928460",
+                    timestamp = "05/11/2026 23:08:46",
+                    sourceAccount = currAcc,
+                    destinationAccount = "901717125251",
+                    destinationName = "BENI SURYAWAN",
+                    destinationBank = "SEABANK",
+                    amount = 50_000L,
+                    adminFee = 2_500L,
+                    note = "",
+                    status = "BERHASIL",
+                    service = "BI-FAST"
+                )
+            ),
+            BcaInboxItem(
+                id = "INB-10",
+                typeTitle = "Transfer BCA Virtual Account",
+                line1 = "05/11/2026 22:45:59 DANA",
+                line2 = null,
+                fullReceiptMessage = "TRANSFER BCA VIRTUAL ACCOUNT\nTanggal: 05/11/2026 22:45:59\nNo. VA: 39010812345678\nNama: DANA TOPUP\nJumlah: Rp 100.000\nSTATUS: BERHASIL",
+                isYellow = false,
+                receipt = TransferReceipt(
+                    referenceNo = "BVA51928100",
+                    timestamp = "05/11/2026 22:45:59",
+                    sourceAccount = currAcc,
+                    destinationAccount = "39010812345678",
+                    destinationName = "DANA TOPUP",
+                    destinationBank = "BCA VA",
+                    amount = 100_000L,
+                    adminFee = 0L,
+                    note = "",
+                    status = "BERHASIL",
+                    service = ""
+                )
+            ),
+            BcaInboxItem(
+                id = "INB-11",
+                typeTitle = "Transfer Antar Bank",
+                line1 = "04/11/2026 23:38:32 MERRY ...",
+                line2 = null,
+                fullReceiptMessage = "TRANSFER ANTAR BANK\nTanggal: 04/11/2026 23:38:32\nBank: BANK MANDIRI\nKe: 1400012345678\nNama: MERRY ANDANI\nJumlah: Rp 450.000\nSTATUS: BERHASIL",
+                isYellow = false,
+                receipt = TransferReceipt(
+                    referenceNo = "OBK41928372",
+                    timestamp = "04/11/2026 23:38:32",
+                    sourceAccount = currAcc,
+                    destinationAccount = "1400012345678",
+                    destinationName = "MERRY ANDANI",
+                    destinationBank = "BANK MANDIRI",
+                    amount = 450_000L,
+                    adminFee = 2_500L,
+                    note = "",
+                    status = "BERHASIL",
+                    service = "BI-FAST"
+                )
+            ),
+            BcaInboxItem(
+                id = "INB-12",
+                typeTitle = "Transfer Antar Rekening",
+                line1 = "04/11/2026 22:43:11 ANDHIKA",
+                line2 = "RAMADHONA",
+                fullReceiptMessage = "TRANSFER ANTAR REKENING\nTanggal: 04/11/2026 22:43:11\nKe: 5270183920\nNama: ANDHIKA RAMADHONA\nJumlah: Rp 150.000\nSTATUS: BERHASIL",
+                isYellow = false,
+                receipt = TransferReceipt(
+                    referenceNo = "TRF41928120",
+                    timestamp = "04/11/2026 22:43:11",
+                    sourceAccount = currAcc,
+                    destinationAccount = "5270183920",
+                    destinationName = "ANDHIKA RAMADHONA",
+                    destinationBank = "BCA",
+                    amount = 150_000L,
+                    adminFee = 0L,
+                    note = "",
+                    status = "BERHASIL",
+                    service = ""
+                )
+            ),
+            BcaInboxItem(
+                id = "INB-13",
+                typeTitle = "Transfer Antar Rekening",
+                line1 = "04/11/2026 16:19:26 AHMAD FAUZI",
+                line2 = null,
+                fullReceiptMessage = "TRANSFER ANTAR REKENING\nTanggal: 04/11/2026 16:19:26\nKe: 0112233445\nNama: AHMAD FAUZI\nJumlah: Rp 80.000\nSTATUS: BERHASIL",
+                isYellow = false,
+                receipt = TransferReceipt(
+                    referenceNo = "TRF41916190",
+                    timestamp = "04/11/2026 16:19:26",
+                    sourceAccount = currAcc,
+                    destinationAccount = "0112233445",
+                    destinationName = "AHMAD FAUZI",
+                    destinationBank = "BCA",
+                    amount = 80_000L,
+                    adminFee = 0L,
+                    note = "",
+                    status = "BERHASIL",
+                    service = ""
+                )
+            ),
+            BcaInboxItem(
+                id = "INB-14",
+                typeTitle = "Transfer Antar Rekening",
+                line1 = "03/11/2026 20:15:10 FIQIH NURAJIZAH",
+                line2 = null,
+                fullReceiptMessage = "TRANSFER ANTAR REKENING\nTanggal: 03/11/2026 20:15:10\nKe: 3741720467\nNama: FIQIH NURAJIZAH\nJumlah: Rp 200.000\nSTATUS: BERHASIL",
+                isYellow = false,
+                receipt = TransferReceipt(
+                    referenceNo = "TRF31920150",
+                    timestamp = "03/11/2026 20:15:10",
+                    sourceAccount = currAcc,
+                    destinationAccount = "3741720467",
+                    destinationName = "FIQIH NURAJIZAH",
+                    destinationBank = "BCA",
+                    amount = 200_000L,
+                    adminFee = 0L,
+                    note = "",
+                    status = "BERHASIL",
+                    service = ""
+                )
+            ),
+            BcaInboxItem(
+                id = "INB-15",
+                typeTitle = "Transfer Antar Bank",
+                line1 = "02/11/2026 14:10:02 BENI S...",
+                line2 = null,
+                fullReceiptMessage = "TRANSFER ANTAR BANK\nTanggal: 02/11/2026 14:10:02\nBank: SEABANK\nKe: 901717125251\nNama: BENI SURYAWAN\nJumlah: Rp 100.000\nSTATUS: BERHASIL",
+                isYellow = false,
+                receipt = TransferReceipt(
+                    referenceNo = "OBK21914100",
+                    timestamp = "02/11/2026 14:10:02",
+                    sourceAccount = currAcc,
+                    destinationAccount = "901717125251",
+                    destinationName = "BENI SURYAWAN",
+                    destinationBank = "SEABANK",
+                    amount = 100_000L,
+                    adminFee = 2_500L,
+                    note = "",
+                    status = "BERHASIL",
+                    service = "BI-FAST"
+                )
+            ),
+            BcaInboxItem(
+                id = "INB-16",
+                typeTitle = "Transfer BCA Virtual Account",
+                line1 = "01/11/2026 10:05:40 SHOPEEPAY",
+                line2 = null,
+                fullReceiptMessage = "TRANSFER BCA VIRTUAL ACCOUNT\nTanggal: 01/11/2026 10:05:40\nNo. VA: 12208123456789\nNama: SHOPEEPAY\nJumlah: Rp 85.000\nSTATUS: BERHASIL",
+                isYellow = false,
+                receipt = TransferReceipt(
+                    referenceNo = "BVA11910050",
+                    timestamp = "01/11/2026 10:05:40",
+                    sourceAccount = currAcc,
+                    destinationAccount = "12208123456789",
+                    destinationName = "SHOPEEPAY",
+                    destinationBank = "BCA VA",
+                    amount = 85_000L,
+                    adminFee = 0L,
+                    note = "",
+                    status = "BERHASIL",
+                    service = ""
+                )
+            )
+        )
     }
 
     companion object {

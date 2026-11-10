@@ -236,6 +236,9 @@ class MainActivity : ComponentActivity() {
                             onNavigateToKurs = {
                                 navigateTo(Screen.InfoKurs)
                             },
+                            onNavigateToInbox = {
+                                navigateTo(Screen.TransferInbox)
+                            },
                             onTabSelected = ::handleBottomNavTab
                         )
 

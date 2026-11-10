@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bca.mobile.R
+import com.bca.mobile.data.repository.BcaRepository
 import com.bca.mobile.ui.components.BcaAlertResultDialog
 import com.bca.mobile.ui.components.BcaBottomNavBar
 import com.bca.mobile.ui.components.BcaNavTab
@@ -36,6 +37,7 @@ fun MTransferMenuScreen(
     modifier: Modifier = Modifier
 ) {
     var alertMessage by remember { mutableStateOf<String?>(null) }
+    val inboxItems by remember { BcaRepository.getInstance().inboxItems }.collectAsState()
 
     Box(
         modifier = modifier
@@ -146,7 +148,7 @@ fun MTransferMenuScreen(
                     HorizontalDivider(color = Color(0xFFF0F2F5), thickness = 0.8.dp)
 
                     BcaMenuItemRow(
-                        title = "Inbox (16)",
+                        title = "Inbox (${inboxItems.size})",
                         onClick = onNavigateToInbox
                     )
                 }
